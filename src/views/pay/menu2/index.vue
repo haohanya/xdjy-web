@@ -1,21 +1,21 @@
 <template>
   <div class="app-container">
 
- <el-form ref="elForm" :model="formData" :rules="rules" size="medium" label-width="100px">
+ <el-form ref="elForm" :model="searchMap" :rules="rules" size="medium" label-width="100px">
    <el-row>
      <el-col :span="7">
        <el-row>
-         <el-form-item label="真实姓名" prop="name">
-           <el-input v-model="formData.name" placeholder="请输入真实姓名" clearable :style="{width: '100%'}">
+         <el-form-item label="真实姓名" prop="userName">
+           <el-input v-model="searchMap.userName" placeholder="请输入真实姓名" clearable :style="{width: '100%'}">
            </el-input>
          </el-form-item>
        </el-row>
      </el-col>
      <el-col :span="7">
        <el-row>
-         <el-form-item label="性别" prop="sex">
-           <el-select v-model="formData.sex" placeholder="请选择性别" clearable :style="{width: '100%'}">
-             <el-option v-for="(item, index) in sexOptions" :key="index" :label="item.label"
+         <el-form-item label="类型" prop="payType">
+           <el-select v-model="searchMap.payType" placeholder="请选择状态" clearable :style="{width: '100%'}">
+             <el-option v-for="(item, index) in typeOptions" :key="index" :label="item.label"
                :value="item.value" :disabled="item.disabled"></el-option>
            </el-select>
          </el-form-item>
@@ -23,8 +23,8 @@
      </el-col>
      <el-col :span="7">
        <el-row>
-         <el-form-item label="状态" prop="status">
-           <el-select v-model="formData.status" placeholder="请选择状态" clearable :style="{width: '100%'}">
+         <el-form-item label="状态" prop="orderStatus">
+           <el-select v-model="searchMap.orderStatus" placeholder="请选择状态" clearable :style="{width: '100%'}">
              <el-option v-for="(item, index) in statusOptions" :key="index" :label="item.label"
                :value="item.value" :disabled="item.disabled"></el-option>
            </el-select>
@@ -33,7 +33,7 @@
      </el-col>
    </el-row>
    <el-form-item size="large">
-     <el-button type="primary" @click="submitForm">提交</el-button>
+     <el-button type="primary" @click="submitForm">搜索</el-button>
      <el-button @click="resetForm">重置</el-button>
    </el-form-item>
  </el-form>
@@ -42,9 +42,13 @@
      :data="tableData"
      border
      style="width: 100%">
-
      <el-table-column
-       fixed
+     fixed
+       type="index"
+       label="序号"
+       width="120">
+     </el-table-column>
+     <el-table-column
        prop="createdTime"
        label="创建时间"
        width="135">
@@ -109,15 +113,14 @@
      <el-table-column
        prop="message"
        label="备注"
-       width="<25></25>0">
+       width="150">
      </el-table-column>
      <el-table-column
        label="操作"
        width="100">
        <template slot-scope="scope">
-         <el-button  type="text" size="small">查看</el-button>
-         <el-button type="text" size="small">编辑</el-button>
-       </template>
+               <el-button @click="findOne(scope.row),dialogFormVisible=true" type="text" size="small">编辑</el-button>
+             </template>
      </el-table-column>
    </el-table>
    <!-- 缴费日志结尾-->
@@ -126,20 +129,58 @@
            @size-change="handleSizeChange"
            @current-change="handleCurrentChange"
            :current-page="pageNum"
-           :page-sizes="[10, 20, 50]"
+           :page-sizes="[1, 10, 20, 50]"
            :page-size="pageSize"
            layout="total, sizes, prev, pager, next, jumper"
            :total="total">
          </el-pagination>
+         <el-dialog title="缴费记录" :visible.sync="dialogFormVisible">
+           <el-form :model="order">
+             <el-form-item label="姓名" :label-width="formLabelWidth">
+                   <el-input v-model="order.userName" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="金额" :label-width="formLabelWidth">
+                    <el-input v-model="order.money" autocomplete="off"></el-input>
+               </el-form-item>
+               <el-form-item label="类型" :label-width="formLabelWidth">
+                      <el-select v-model="order.payType" placeholder="请选择">
+                         <el-option
+                           v-for="item in typeOptions"
+                           :key="item.value"
+                           :label="item.label"
+                           :value="item.value">
+                         </el-option>
+                       </el-select>
+                </el-form-item>
+                <el-form-item label="状态" :label-width="formLabelWidth">
+                      <el-select v-model="order.orderStatus" placeholder="请选择">
+                         <el-option
+                           v-for="item in statusOptions"
+                           :key="item.value"
+                           :label="item.label"
+                           :value="item.value">
+                         </el-option>
+                       </el-select>
+                 </el-form-item>
+           </el-form>
+           <div slot="footer" class="dialog-footer">
+             <el-button @click="dialogFormVisible = false">取 消</el-button>
+             <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+           </div>
+         </el-dialog>
 
    </div>
 
 </template>
 <script>
   //条件分页查询全部缴费日志
-  import { getPage } from '@/api/pay/order'
+  import { getPage } from '@/api/pay/order';
+  //根据id查询
+  import { getOne } from '@/api/pay/order';
   //日期处理
   import {formatDate} from '@/utils/date';
+
+
 
   export default {
     filters: {
@@ -164,43 +205,35 @@
         //支付日志数据数组
                 tableData: [],
                 searchMap: {},
-                pageNum: 1,
-                pageSize: 10,
-                total:0,
+                order:{},
+                pageNum: 0,
+                pageSize: 1,
+                total:3,
+                dialogFormVisible:false,
+                formLabelWidth: '100px',
                  formData: {
                         name: undefined,
-                        sex: undefined,
+                        type: undefined,
                         status: undefined,
                       },
                       rules: {
-                        name: [{
-                          required: true,
-                          message: '请输入真实姓名',
-                          trigger: 'blur'
-                        }],
-                        sex: [{
-                          required: true,
-                          message: '请选择性别',
-                          trigger: 'change'
-                        }],
-                        status: [{
-                          required: true,
-                          message: '请选择状态',
-                          trigger: 'change'
-                        }],
+
                       },
-                      sexOptions: [{
-                        "label": "男",
-                        "value": 0
+                      typeOptions: [{
+                        "label": "水费",
+                        "value": "水费"
                       }, {
-                        "label": "女",
-                        "value": 1
+                        "label": "电费",
+                        "value": "电费"
+                      },{
+                        "label": "住宿费",
+                        "value": "住宿费"
                       }],
                       statusOptions: [{
-                        "label": "正常",
+                        "label": "已支付",
                         "value": 1
                       }, {
-                        "label": "不可用",
+                        "label": "未支付",
                         "value": 0
                       }],
                     }
@@ -212,32 +245,37 @@
      this.fetchData()
     },
     methods: {
-      resetForm(formName) {
-              this.$refs[formName].resetFields();
-            },
            fetchData() {
              getPage(this.pageNum,this.pageSize,this.searchMap).then(response => {
-
                this.tableData = response.data.rows;
                this.total=response.data.total;
-
              })
            },
-           handleSizeChange(){
+           handleSizeChange($val){
 
+             this.pageSize=$val;
+             this.fetchData();
            },
-           handleCurrentChange(){
-
+           handleCurrentChange($val){
+              console.log($val)
+             this.pageNum=$val
+             this.fetchData();
            },
            submitForm() {
                  this.$refs['elForm'].validate(valid => {
-                   if (!valid) return
+                   this.fetchData();
                    // TODO 提交表单
                  })
                },
                resetForm() {
                  this.$refs['elForm'].resetFields()
                },
+               findOne(rows){
+                 getOne(rows.id).then(response=>{
+                   this.order= response.data;
+                   console.log(this.order);
+                 })
+                 }
     }
 
   }

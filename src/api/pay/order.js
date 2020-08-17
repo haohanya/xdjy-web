@@ -15,4 +15,11 @@ export function getPage(pageNum,pageSize,data) {
     method: 'post',
     data
   })
+  }
+export function getOne(id) {
+  return request({
+    baseURL: urls.urla,
+    url: '/pay/order/findOne?id='+id,
+    method: 'get'
+  })
 }
