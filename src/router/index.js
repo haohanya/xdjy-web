@@ -6,7 +6,7 @@ Vue.use(Router)
 /* Layout */
 import Layout from '@/layout'
 import Pay from '@/router/modules/pay'
-
+import shop from '@/router/modules/shop'
 import System from '@/router/modules/system'
 
 /**
@@ -166,7 +166,8 @@ export const constantRoutes = [
  // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true },
   Pay,
-  System
+  System,
+  shop
 ]
 
 const createRouter = () => new Router({

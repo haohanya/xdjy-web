@@ -27,17 +27,6 @@ if (process.env.NODE_ENV === 'production') {
   const { mockXHR } = require('../mock')
   mockXHR()
 }
-
-// set ElementUI lang to EN
-<<<<<<< HEAD
-<<<<<<< HEAD
-//Vue.use(ElementUI, { locale })
-=======
-// Vue.use(ElementUI, { locale })
->>>>>>> eba13d4... update system user
-=======
-// Vue.use(ElementUI, { locale })
->>>>>>> master
 // 如果想要中文版 element-ui，按如下方式声明
 Vue.use(ElementUI)
 

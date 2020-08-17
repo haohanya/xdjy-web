@@ -51,9 +51,6 @@ service.interceptors.response.use(
         type: 'error',
         duration: 5 * 1000
       })
-
-<<<<<<< HEAD
-<<<<<<< HEAD
       // 50008：非法令牌； 50012：其他客户端登录； 50014：令牌已过期；
       /* if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
         // 重新登录
@@ -67,9 +64,6 @@ service.interceptors.response.use(
           })
         })
       } */
-=======
-=======
->>>>>>> master
       // // 50008：非法令牌； 50012：其他客户端登录； 50014：令牌已过期；
       // if (res.code === 50008 || res.code === 50012 || res.code === 50014) {
       //   // 重新登录
@@ -83,10 +77,6 @@ service.interceptors.response.use(
       //     })
       //   })
       // }
-<<<<<<< HEAD
->>>>>>> eba13d4... update system user
-=======
->>>>>>> master
       return Promise.reject(new Error(res.message || 'Error'))
     } else {
       return res
